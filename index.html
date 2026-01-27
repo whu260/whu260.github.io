@@ -167,7 +167,7 @@
                         </span>
                         <span class="font-bold text-sm text-gray-800">{{ job.dates }}</span>
                     </div>
-                    <div class="text-gray-700 italic mb-2">{{ job.company }}</div>
+                    <div  itaclass="text-gray-700lic mb-2">{{ job.company }}</div>
                     <p class="text-sm text-gray-600 line-clamp-2">{{ job.summary }}</p>
                     <div class="mt-3 flex gap-2">
                         <span v-for="tool in job.tools" class="px-2 py-0.5 bg-white border border-gray-200 rounded text-xs text-gray-500 font-mono">{{ tool }}</span>
@@ -180,42 +180,80 @@
                 <div class="flex justify-center mb-6">
                     <div class="inline-flex bg-gray-100 p-1 rounded-lg shadow-inner">
                         <button 
-                            @click="activeCategory = 'VU'"
+                            @click="activeCategory = 'VU'; expandedYear = null"
                             :class="activeCategory === 'VU' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
                             class="px-4 py-1.5 rounded-md text-xs font-bold transition-all">
                             VU Projects
                         </button>
                         <button 
-                            @click="activeCategory = 'HvA'"
+                            @click="activeCategory = 'HvA'; expandedYear = null"
                             :class="activeCategory === 'HvA' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
                             class="px-4 py-1.5 rounded-md text-xs font-bold transition-all">
                             HvA Projects
                         </button>
                     </div>
                 </div>
-                
-                <div v-for="proj in projects" :key="proj.title" 
-                    v-show="proj.university === activeCategory || (!proj.university && activeCategory === 'VU')"
-                    @click="openDetail(proj)"
-                    class="mb-4 pl-4 border-l-4 border-blue-500 hover:bg-blue-50 cursor-pointer p-3 transition rounded-r group">
-                    <div class="flex justify-between items-center">
-                        <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
-                        <span class="text-xs text-gray-500 font-mono">{{ proj.year || proj.dates }}</span>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
-                    <div class="flex flex-wrap gap-1">
-                        <span v-for="tag in (proj.tags || proj.tools)" :key="tag" 
-                            class="text-[10px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
-                            {{ tag }}
-                        </span>
-                    </div>
-                </div>
 
-                <div v-if="activeCategory === 'HvA'" 
-                    class="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400 group hover:border-blue-300 hover:text-blue-400 transition-all duration-300">
-                    <i class="fas fa-ellipsis-h text-2xl mb-2 group-hover:scale-110 transition-transform"></i>
-                    <p class="text-sm font-medium tracking-wide uppercase">Meer projecten worden binnenkort toegevoegd</p>
-                    <p class="text-[10px] italic mt-1 opacity-75 text-center">Inclusief aanvullende Machine Learning cases</p>
+                <div class="space-y-4">
+
+                    <template v-if="activeCategory === 'HvA'">
+                        <div v-for="yearName in ['Jaar 4', 'Jaar 3', 'Jaar 2', 'Jaar 1']" :key="yearName" 
+                            class="border border-gray-100 rounded-lg overflow-hidden bg-white shadow-sm">
+                            
+                            <div @click="expandedYear = (expandedYear === yearName ? null : yearName)" 
+                                class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-blue-500">
+                                <h3 class="font-bold text-gray-800 flex items-center">
+                                    <i :class="['fas', expandedYear === yearName ? 'fa-folder-open' : 'fa-folder', 'mr-2 text-blue-500']"></i>
+                                    {{ yearName }}
+                                </h3>
+                                <i :class="['fas', expandedYear === yearName ? 'fa-chevron-up' : 'fa-chevron-down', 'text-gray-400 text-sm']"></i>
+                            </div>
+
+                            <transition name="fade">
+                                <div v-if="expandedYear === yearName" class="p-4 bg-gray-50/50 border-t border-gray-100">
+                                    <div v-for="proj in projects.filter(p => p.university === 'HvA' && p.year === yearName)" 
+                                        :key="proj.title" 
+                                        @click.stop="openDetail(proj)"
+                                        class="mb-3 pl-4 border-l-4 border-blue-500 hover:bg-white hover:shadow-md cursor-pointer p-3 transition rounded-r group bg-white shadow-sm">
+                                        <div class="flex justify-between items-center">
+                                            <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
+                                            <span class="text-[10px] text-gray-500 font-mono">{{ proj.dates }}</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
+                                        <div class="flex flex-wrap gap-1">
+                                            <span v-for="tag in (proj.tags || proj.tools)" :key="tag" 
+                                                class="text-[9px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
+                                                {{ tag }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div v-if="projects.filter(p => p.university === 'HvA' && p.year === yearName).length === 0" class="text-xs text-gray-400 italic text-center py-2">
+                                        Geen projecten beschikbaar voor dit jaar.
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <div v-for="proj in projects.filter(p => p.university === 'VU' || !p.university)" 
+                            :key="proj.title"
+                            @click="openDetail(proj)"
+                            class="mb-4 pl-4 border-l-4 border-blue-500 hover:bg-blue-50 cursor-pointer p-3 transition rounded-r group shadow-sm bg-white">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
+                                <span class="text-xs text-gray-500 font-mono">{{ proj.dates }}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
+                            <div class="flex flex-wrap gap-1">
+                                <span v-for="tag in (proj.tags || proj.tools)" :key="tag" 
+                                    class="text-[10px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
+                                    {{ tag }}
+                                </span>
+                            </div>
+                        </div>
+                    </template>
+
                 </div>
             </section>
 
@@ -336,6 +374,7 @@
                 activeCategory: 'VU',
                 showCertificates: false, 
                 activeItem: null,        
+                expandedYear: null,
                 activeCert: null,
                 
                 skills: [
@@ -524,6 +563,7 @@
 
                     {
                         title: "Project: Optimale Personeelsroostering (Operations Research)",
+                        year: "Jaar 1",
                         university: "HvA", 
                         category: "Operations Research & Optimization",
                         dates: "sep 2019 -- jan 2020",
@@ -566,6 +606,7 @@
 
                     {
                         title: "Project: Actuariële Offerteberekening (Financiële Wiskunde)",
+                        year: "Jaar 1",
                         university: "HvA",
                         category: "Financial Mathematics & Actuarial Science",
                         dates: "apr 2020 -- jun 2020",
@@ -608,6 +649,7 @@
 
                     {
                         title: "Project: Prime Number Algorithms & Visualization",
+                        year: "Jaar 2",
                         university: "HvA", 
                         category: "Java Programming & Algorithm Design",
                         dates: "sep 2020 -- nov 2020",
@@ -649,6 +691,7 @@
                     },
                     {
                         title: "Project: Airline Fleet Assignment & Maintenance Optimization",
+                        year: "Jaar 2",
                         university: "HvA",
                         category: "Operations Research & Optimization",
                         dates: "Nov 2020 -- Jan 2021",
@@ -720,6 +763,7 @@
                     },
                     {
                         title: "Project: Huizenprijs Voorspelmodel (Meervoudige Regressie)",
+                        year: "Jaar 2",
                         university: "HvA",
                         category: "Statistics & Econometrics",
                         dates: "apr 2021 -- jun 2021",
@@ -759,6 +803,225 @@
                             { path: './picture/ST2.4.jpg', caption: "Model output en coëfficiënten-analyse in R." }
                         ]
                     },
+                    {
+                        title: "Project: Computational Science & Numerical Algorithms (Java)",
+                        year: "Jaar 3",
+                        university: "HvA",
+                        category: "Numerical Methods & OOP",
+                        dates: "mrt 2022 -- apr 2022",
+                        summary: "Een gecombineerd project gericht op geavanceerde numerieke methoden: het visualiseren van Newton Fractals en het simuleren van vloeistofniveaus met Simpson's Rule.",
+                        tools: ["Java", "OOP", "Newton-Raphson", "Simpson's Rule", "Fractals", "StdDraw"],
+                        github: "https://github.com/whu260/Projects/tree/main/HVA/Jaar%203/PRG3.3", 
+                        description: "In deze projectenreeks heb ik complexe wiskundige vraagstukken vertaald naar efficiënte Java-code, met een focus op zowel numerieke precisie als grafische visualisatie.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Newton-Raphson & Complex Fractals</h4>
+                                    <p class="text-sm">Implementatie van de <strong>Newton-Raphson iteratiemethode</strong> toegepast op complexe polynomen. Door gebruik te maken van een eigen <strong>Complex</strong> klasse, worden 'Basins of Attraction' gegenereerd. Dit resulteert in gedetailleerde fractale patronen die de convergentie van startwaarden visualiseren.</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Numerieke Integratie (Simpson's Rule)</h4>
+                                    <p class="text-sm">Ontwikkeling van een simulatiemodel voor een opslagvat. Met de <strong>Regel van Simpson</strong> wordt de netto inhoud berekend door complexe toevoer- en afnamefuncties (exponentieel/logaritmisch) numeriek te integreren, inclusief dynamische detectie van maximale capaciteit en overloopmomenten.</p>
+                                </div>
+
+                                <div class="border-l-4 border-orange-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Grafische Visualisatie & Animatie</h4>
+                                    <p class="text-sm">Gebruik van <strong>StdDraw</strong> voor real-time visualisatie. Dit omvat zowel statische weergaven van complexe wortels als dynamische animaties (Double Buffering) waarbij de verandering van fractale structuren zichtbaar wordt bij variërende coëfficiënten.</p>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <a href="https://github.com/whu260/Projects/tree/main/HVA/Jaar%203/PRG3.3" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium">
+                                        <i class="fab fa-github"></i>
+                                        Bekijk de Source Code
+                                    </a>
+                                    <span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded">Computational Math</span>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/PRG3.3.gif', caption: "Animatie van Newton Fractals bij variërende coëfficiënten (Wisart_E)." },
+                            { path: './picture/PRG3.3_1.jpg', caption: "Statische visualisatie van Basins of Attraction (Wisart_D)." },
+                            { path: './picture/PRG3.3_2.jpg', caption: "Simulatie van instroom- en uitstroomcurven in het opslagvat (Opslagvat_D)." }
+                        ]
+                    },
+                    {
+                        title: "Project: Predictive Analytics (Machine Learning)",
+                        year: "Jaar 3",
+                        university: "HvA",
+                        category: "Data Science & Machine Learning",
+                        dates: "feb 2022 -- apr 2022",
+                        summary: "Een uitgebreid vergelijkend onderzoek naar machine learning algoritmen om bankconversies te voorspellen en ROI te optimaliseren.",
+                        tools: ["R", "Random Forest", "SVM", "KNN", "Logistic Regression", "Decision Trees"],
+                        github: "https://github.com/whu260/Projects/tree/main/HVA/Jaar%202/Prog3.4", 
+                        description: "In dit project hebben we de effectiviteit van diverse voorspelmodellen (Lineair, Logistisch, Tree-based en Kernel-based) geëvalueerd om de meest rendabele belstrategie voor een marketingcampagne te bepalen.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Brede Modelverkenning</h4>
+                                    <p class="text-sm">Implementatie en vergelijking van een breed scala aan algoritmen: 
+                                        <strong>Lineaire & Logistische Regressie</strong> voor baseline metingen, 
+                                        <strong>Decision Trees & Random Forests</strong> voor niet-lineaire verbanden, en 
+                                        <strong>SVM (Support Vector Machines) & KNN</strong> voor complexe patroonherkenning.
+                                    </p>
+                                </div>
+
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Modelvalidatie & Hyperparameters</h4>
+                                    <p class="text-sm">Evaluatie van modellen op basis van <strong>Accuracy, Precision-Recall</strong> en <strong>AUC-ROC</strong>. Door gebruik te maken van technieken zoals k-fold cross-validation, hebben we de stabiliteit van de modellen (zoals de k-waarde in KNN en de kernel-parameters in SVM) geoptimaliseerd.</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Financieel Rendement (ROI)</h4>
+                                    <p class="text-sm">De uiteindelijke modelselectie was niet alleen gebaseerd op statistische nauwkeurigheid, maar op de <strong>maximale verwachte winst</strong>. Hierbij werd de trade-off tussen de kosten van marketing (False Positives) en de gemiste kansen (False Negatives) gekwantificeerd.</p>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <a href="https://github.com/whu260/Projects/tree/main/HVA/Jaar%202/Prog3.4" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium">
+                                        <i class="fab fa-github"></i>
+                                        Bekijk de Source Code
+                                    </a>
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded">Advanced Analytics</span>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/BP3.3_1.jpg', caption: "Random Forest Performance: Variabele belangrijkheid en foutreductie." },
+                            { path: './picture/BP3.3_2.jpg', caption: "Beslissingsboom: Een visuele weergave van de segmentatielogica." }
+                        ]
+                    },
+                    {
+                        title: "Project: Deep Learning voor Zelftest Herkenning (CNN)",
+                        year: "Jaar 3",
+                        university: "HvA",
+                        category: "Deep Learning", 
+                        dates: "mei 2022 -- jun 2022",
+                        summary: "Ontwikkeling van een Convolutioneel Neuraal Netwerk (CNN) om zelftesten automatisch en objectief te classificeren via beeldherkenning.",
+                        tools: ["R", "Keras", "TensorFlow", "VGG16", "Data Augmentation", "Image Classification"], 
+                        github: "https://github.com/whu260/Projects/blob/main/HVA/Jaar%203/BP3.4/CNN_Opdracht.R", 
+                        description: "In dit project hebben we een deep learning oplossing ontwikkeld om menselijke interpretatiefouten bij het aflezen van zelftesten te elimineren met behulp van neurale netwerken.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-red-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Convolutionele Neurale Netwerken (CNN)</h4>
+                                    <p class="text-sm">We hebben een <strong>CNN-architectuur</strong> geïmplementeerd met <em>VGG16</em> als basis (Transfer Learning). Door de 'top layers' aan te passen voor binaire classificatie, konden we patronen in teststrips herkennen die voor het menselijk oog onduidelijk waren.</p>
+                                </div>
+
+                                <div class="border-l-4 border-yellow-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Beeldherkenning & Data Augmentatie</h4>
+                                    <p class="text-sm">Voor een betere generalisatie hebben we geavanceerde <strong>Image Processing</strong> technieken toegepast. Door data-augmentatie (zoals rotaties en verschuivingen) werd het model getraind om robuust om te gaan met variaties in belichting en cameraposities.</p>
+                                </div>
+
+                                <div class="border-l-4 border-indigo-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Classificatie Analyse & Validatie</h4>
+                                    <p class="text-sm">Met een <strong>threshold van 0,5</strong> behaalde het model een nauwkeurigheid van <strong>86,7%</strong>. De prestaties zijn geëvalueerd middels een <em>Confusion Matrix</em>, waarbij we specifiek hebben geoptimaliseerd om fout-negatieve classificaties te minimaliseren.</p>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <a href="https://github.com/whu260/Projects/blob/main/HVA/Jaar%203/BP3.4/CNN_Opdracht.R" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium">
+                                        <i class="fab fa-github"></i>
+                                        Bekijk Code
+                                    </a>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">Deep Learning</span>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/Poster.jpg', caption: "De projectposter met de methodologie en resultaten van de beeldherkenning." }
+                        ]
+                    },
+                    {
+                        title: "Project: Tijdreeksanalyse Windenergie Nederland (SARIMA)",
+                        year: "Jaar 4",
+                        university: "HvA",
+                        category: "Forecasting",
+                        dates: "sep 2022 -- nov 2022",
+                        summary: "Geavanceerde tijdreeksanalyse uitgevoerd op CBS-data om de netto windenergieproductie in Nederland te modelleren en voorspellen middels SARIMA-modellering.",
+                        tools: ["R", "SARIMA", "Time Series", "Tidyverse", "Forecast", "CBS API"],
+                        github: "https://github.com/whu260/Projects/blob/main/HVA/Jaar%204/ST4.1/Tijdreeks.R",
+                        description: "In dit project hebben we de seizoensgebonden patronen en groeitrends van de Nederlandse windenergie geanalyseerd om nauwkeurige voorspellingen voor de energietransitie te genereren.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">SARIMA-modellering & Stationariteit</h4>
+                                    <p class="text-sm">We hebben een <strong>SARIMA(1,1,2)(0,1,1)[12]</strong> model geïmplementeerd na uitgebreide stationariteitstoetsing (Unit Root tests). Door seizoensdifferentiatie toe te passen, konden we de sterke winterpieken in de windenergieproductie nauwkeurig vangen.</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Box-Jenkins Methodologie</h4>
+                                    <p class="text-sm">Voor de modelidentificatie hebben we <strong>ACF en PACF plots</strong> geanalyseerd en <em>Box-Cox transformaties</em> gebruikt om de variantie te stabiliseren. Het model is geoptimaliseerd op basis van de <strong>AICc</strong> waarden en residu-analyse (Ljung-Box test).</p>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Dataprocessing & Forecasting</h4>
+                                    <p class="text-sm">Via de <strong>CBS Open Data API</strong> hebben we 20 jaar aan maandcijfers verwerkt. De uiteindelijke forecast biedt een betrouwbaar beeld van de verwachte energieproductie voor de komende 24 maanden, essentieel voor capaciteitsplanning.</p>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <a href="https://github.com/whu260/Projects/blob/main/HVA/Jaar%204/ST4.1/Tijdreeks.R" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium">
+                                        <i class="fab fa-github"></i>
+                                        Bekijk Code
+                                    </a>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">Forecasting & Statistics</span>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/ST4.1_1.jpg', caption: "De uiteindelijke SARIMA-voorspelling van de windenergieproductie voor 2023-2024." },
+                            { path: './picture/ST4.1_2.jpg', caption: "Seizoensdecompositie: Splitsing in trend, seizoen en residu." }
+                        ]
+                    },
+                    {
+                        title: "Project: Relational Database Design & SQL Querying",
+                        year: "Jaar 4",
+                        university: "HvA",
+                        dates: "okt 2022 -- nov 2022",
+                        category: "Data Modelling",
+                        summary: "Ontwerp en implementatie van relationele databases met R en SQLite. Focus op complexe SQL-queries voor data-extractie en het versterken van database-integriteit.",
+                        tools: ["SQL", "SQLite", "R", "Database Design", "Data Modelling", "RSQLite", "DBI"],
+                        github: "https://github.com/whu260/Projects/blob/main/HVA/Jaar%204/DM4.1/DM_RScript.R",
+                        description: "In dit project hebben we database-theorie gecombineerd met praktische SQL-vaardigheden binnen de R-omgeving om complexe data-puzzels op te lossen.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Complexe SQL-queries & Data Extractie</h4>
+                                    <p class="text-sm">Implementatie van geavanceerde <strong>JOINs, subqueries en aggregatiefuncties</strong> om specifieke inzichten te verkrijgen uit een complexe relationele database (Crime Scene Investigation scenario).</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Schema-integriteit & Constraints</h4>
+                                    <p class="text-sm">Versterking van de database-integriteit door het implementeren van <strong>CHECK constraints en FOREIGN KEY relaties</strong>. Bijvoorbeeld het waarborgen dat persoonsgegevens altijd zowel een voor- als achternaam bevatten.</p>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">R-SQL Integratie (RSQLite)</h4>
+                                    <p class="text-sm">Gebruik van de <strong>DBI interface</strong> in R om databaseverbindingen te beheren, tabellen te manipuleren en SQL-resultaten direct om te zetten naar dataframes voor verdere analyse.</p>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <a href="https://github.com/whu260/Projects/blob/main/HVA/Jaar%204/DM4.1/DM_RScript.R" 
+                                    target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors text-sm font-medium">
+                                        <i class="fab fa-github"></i>
+                                        Bekijk Code
+                                    </a>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">Database Engineering</span>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/DM4.1.jpg', caption: "Database-architectuur en SQL-implementatie in R." }
+                        ]
+                    },
+                    
 ],
 
                 references: [
