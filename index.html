@@ -236,22 +236,59 @@
                     </template>
 
                     <template v-else>
-                        <div v-for="proj in projects.filter(p => p.university === 'VU' || !p.university)" 
+                        <div v-for="proj in projects.filter(p => p.university === 'VU' && p.year === 'Master')"
                             :key="proj.title"
-                            @click="openDetail(proj)"
-                            class="mb-4 pl-4 border-l-4 border-blue-500 hover:bg-blue-50 cursor-pointer p-3 transition rounded-r group shadow-sm bg-white">
-                            <div class="flex justify-between items-center">
-                                <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
-                                <span class="text-xs text-gray-500 font-mono">{{ proj.dates }}</span>
+                            @click.stop="openDetail(proj)"
+                            class="mb-3 pl-4 border-l-4 border-blue-500 hover:bg-white hover:shadow-md cursor-pointer p-3 transition rounded-r group bg-white shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
+                            <span class="text-[10px] text-gray-500 font-mono">{{ proj.dates }}</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span v-for="tag in (proj.tags || proj.tools)" :key="tag"
+                                class="text-[9px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
+                            {{ tag }}
+                            </span>
+                        </div>
+                        </div>
+
+                        <div v-for="yearName in vuYears" :key="yearName" class="border border-gray-100 rounded-lg overflow-hidden bg-white shadow-sm">
+                            <div @click="expandedYear = (expandedYear === yearName ? null : yearName)"
+                                class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 border-blue-500">
+                            <h3 class="font-bold text-gray-800 flex items-center">
+                                <i :class="['fas', expandedYear === yearName ? 'fa-folder-open' : 'fa-folder', 'mr-2 text-blue-500']"></i>
+                                {{ yearName }}
+                            </h3>
+                            <i :class="['fas', expandedYear === yearName ? 'fa-chevron-up' : 'fa-chevron-down', 'text-gray-400 text-sm']"></i>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
+
+                            <transition name="fade">
+                            <div v-if="expandedYear === yearName" class="p-4 bg-gray-50/50 border-t border-gray-100">
+                                <div v-for="proj in projects.filter(p => p.university === 'VU' && p.year === yearName)"
+                                    :key="proj.title"
+                                    @click.stop="openDetail(proj)"
+                                    class="mb-3 pl-4 border-l-4 border-blue-500 hover:bg-white hover:shadow-md cursor-pointer p-3 transition rounded-r group bg-white shadow-sm">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="font-bold text-gray-800 group-hover:text-blue-700">{{ proj.title }}</h4>
+                                    <span class="text-[10px] text-gray-500 font-mono">{{ proj.dates }}</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1 mb-2">{{ proj.summary }}</p>
                             <div class="flex flex-wrap gap-1">
-                                <span v-for="tag in (proj.tags || proj.tools)" :key="tag" 
-                                    class="text-[10px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
-                                    {{ tag }}
+                                <span v-for="tag in (proj.tags || proj.tools)" :key="tag"
+                                    class="text-[9px] uppercase font-bold text-blue-500 bg-blue-100 px-1.5 py-0.5 rounded">
+                                {{ tag }}
                                 </span>
                             </div>
+                            </div>
+
+                            <div v-if="projects.filter(p => p.university === 'VU' && p.year === yearName).length === 0"
+                                class="text-xs text-gray-400 italic text-center py-2">
+                            Geen projecten beschikbaar voor dit jaar.
+                            </div>
                         </div>
+                        </transition>
+                    </div>
                     </template>
 
                 </div>
@@ -512,8 +549,10 @@
                 projects: [
                     {
                             title: "Project: Autonome Robotica (Learning Machines)",
+                            year: "Master",
+                            university: "VU",
                             category: "Deep Reinforcement Learning",
-                            dates: "2024",
+                            dates: "jun 2024",
                             summary: "Ontwikkeling van een zelflerend systeem voor de Robobo-robot. De robot leerde navigeren en taken uitvoeren door middel van vallen en opstaan (Reinforcement Learning).",
                             tools: ["Reinforcement Learning", "Python", "PyTorch", "TD3", "Computer Vision", "Webots Simulator", "Docker"],
                             github: "https://github.com/whu260/Projects/tree/main/Learning_machine",
@@ -560,6 +599,93 @@
                                 }
                             ],
                     },
+
+                    {
+                        title: "Big Data: Predictive Modelling for Used Car Prices",
+                        year: "Premaster",
+                        university: "VU",
+                        dates: "jun 2022 -- jul 2022",
+                        category: "Data Science & Machine Learning",
+                        summary: "Grootschalige data-analyse waarbij een dataset van 500.000+ records is gebruikt om de verkoopwaarde van tweedehands auto's te voorspellen middels Random Forest en ElasticNet.",
+                        tools: ["Python", "Random Forest", "ElasticNet", "Scikit-Learn", "Statsmodels", "Hypothesis Testing"],
+                        github: "https://github.com/whu260/Projects/tree/main/VU/Premaster/BigData",
+                        description: "Een end-to-end data science project gericht op het opschonen van grootschalige datasets, feature engineering en het vergelijken van verschillende regressiemodellen.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Exploratory Data Analysis (EDA)</h4>
+                                    <p class="text-sm">Uitgebreide analyse van de dataset (500k+ records). Gebruikgemaakt van <strong>Scatterplots</strong> om de correlatie tussen kilometerstand, leeftijd en de uiteindelijke verkoopprijs te visualiseren en uitschieters te identificeren.</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Regularized Regression (ElasticNet)</h4>
+                                    <p class="text-sm">Implementatie van <strong>ElasticNet-regressie</strong> om overfitting te voorkomen. Door L1- en L2-regularisatie te combineren, zijn de meest significante variabelen geïdentificeerd die de prijs beïnvloeden.</p>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Ensemble Learning (Random Forest)</h4>
+                                    <p class="text-sm">Toepassing van een <strong>Random Forest Regressor</strong> met hyperparameter tuning (n_estimators=50, max_depth=30). Dit model leverde de beste prestaties met een <strong>MAE van 922.92</strong>.</p>
+                                </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-100">
+                                    <a href="https://github.com/whu260/Projects" target="_blank" 
+                                    class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-black transition shadow-md">
+                                        <i class="fab fa-github mr-2"></i> Source Code
+                                    </a>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/BigData_1.jpg', caption: "Exploratieve Analyse: Relatie tussen conditie, kilometerstand en prijs." },
+                            { path: './picture/BigData_2.jpg', caption: "Modelprestaties: ElasticNet" },
+                            { path: './picture/BigData_3.jpg', caption: "Modelprestaties: Random Forest" }
+                        ]
+                    },
+                    {
+                        title: "Java Software Engineering: Interactive Systems & Algorithms",
+                        year: "Premaster",
+                        university: "VU",
+                        dates: "sep 2021 -- okt 2021",
+                        category: "Software Development",
+                        summary: "Ontwikkeling van interactieve applicaties en complexe algoritmische oplossingen in Java, met een sterke focus op Object-Oriented Design (OOD) en computational logic.",
+                        tools: ["Java", "OOP", "Data Structures", "Algorithms", "GUI Development", "libUI"],
+                        github: "https://github.com/whu260/Projects/tree/main/VU/Premaster/Java",
+                        description: "Een technische verkenning van software-architectuur, waarbij abstracte concepten zijn vertaald naar functionele tools zoals pathfinding-algoritmen en interactieve simulaties.",
+                        details: `
+                            <div class="space-y-6 text-gray-700">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Object-Oriented Architecture</h4>
+                                    <p class="text-sm">Ontwerp van robuuste systemen middels <strong>overerving, polymorfisme en abstractie</strong>. Gebruikgemaakt van complexe klassenhiërarchieën om de status van interactieve elementen (zoals in de Snake- en Othello-simulaties) efficiënt te beheren.</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">Algoritmische Complexiteit</h4>
+                                    <p class="text-sm">Implementatie van diverse computeralgoritmen, waaronder <strong>pathfinding (Longest Path)</strong> en efficiënte bewegingslogica. Hierbij lag de focus op het optimaliseren van tijd- en ruimtecomplexiteit binnen de Java-omgeving.</p>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-bold text-gray-900 text-base">GUI & Event-Driven Logic</h4>
+                                    <p class="text-sm">Integratie van backend-logica met grafische interfaces via de <strong>libUI-bibliotheek</strong>. Het verwerken van gebruikersinput en real-time rendering van data-updates in interactieve dashboards en applicaties.</p>
+                                </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                                    <a href="https://github.com/whu260/Projects/tree/main/VU/Premaster/Java" target="_blank" 
+                                    class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-black transition shadow-md">
+                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                                        Source Code
+                                    </a>
+                                </div>
+                            </div>
+                        `,
+                        images: [
+                            { path: './picture/snake.gif', caption: "Snake" },
+                            { path: './picture/Replay.gif', caption: "Replay" },
+                            { path: './picture/LongestPath.gif', caption: "LongestPath" }
+                        ]
+                    },
+                    
+
+
 
                     {
                         title: "Project: Optimale Personeelsroostering (Operations Research)",
@@ -1044,6 +1170,14 @@
                 ]
             }
         },
+        computed: {
+            vuYears() {
+                const years = [...new Set(this.projects
+                .filter(p => p.university === 'VU' && p.year)
+                .map(p => p.year))];
+                return years.filter(y => y !== 'Master').length ? years.filter(y => y !== 'Master') : ['Premaster'];
+            }
+            },
         methods: {
             openDetail(item) {
                 this.activeItem = item;
