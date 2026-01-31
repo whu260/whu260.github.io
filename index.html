@@ -11,7 +11,12 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        gtag('config', 'G-V7939RLB4G', { 'anonymize_ip': true });
+        gtag('config', 'G-V7939RLB4G', {
+        'anonymize_ip': true,
+        'client_storage': 'none', 
+        'allow_google_signals': false,
+        'allow_ad_personalization_signals': false
+        });
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
